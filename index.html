@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Boba Bounce 🧋</title>
 <style>
   :root {
@@ -23,7 +23,7 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 12px;
+    padding: calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
   }
   h1 {
     font-size: clamp(20px, 4vw, 34px);
@@ -38,6 +38,12 @@
   }
   #hud span { color: #ffd6f5; }
   canvas {
+    /* Scale to fit any screen while keeping the 480:640 (3:4) shape.
+       Bounded by width, by available height, and never upscaled past native. */
+    width: min(480px, 94vw, (100dvh - 150px) * 0.75);
+    height: auto;
+    aspect-ratio: 480 / 640;
+    max-width: 94vw;
     border-radius: 18px;
     box-shadow: 0 12px 50px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.06);
     background: radial-gradient(120% 120% at 50% 0%, #2a1f3d 0%, #160f24 70%);
@@ -57,6 +63,7 @@
     justify-content: center;
     gap: 18px;
     background: rgba(10,7,16,.82);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     text-align: center;
     padding: 20px;
