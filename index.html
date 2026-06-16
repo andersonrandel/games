@@ -3,440 +3,193 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Aqua Royal Chess</title>
+<title>Game Portal</title>
 <style>
-  :root {
-    --cyan: #35f4ff;
-    --turq: #20d9bd;
-    --blue: #206dff;
-    --ink: #06131f;
-    --panel: rgba(6, 18, 32, .78);
-    --light: #d9fbff;
-    --dark: #174d68;
-    --gold: #ffe7a3;
-  }
   * { box-sizing: border-box; }
   html, body { min-height: 100%; margin: 0; }
   body {
     font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
-    color: #effdff;
+    color: #f6feff;
     background:
-      radial-gradient(circle at 20% 8%, rgba(53,244,255,.28), transparent 28rem),
-      radial-gradient(circle at 80% 18%, rgba(32,109,255,.28), transparent 24rem),
-      linear-gradient(135deg, #03111d 0%, #092036 48%, #04101d 100%);
+      radial-gradient(circle at 15% 10%, rgba(255,154,212,.35), transparent 24rem),
+      radial-gradient(circle at 85% 14%, rgba(53,244,255,.32), transparent 27rem),
+      radial-gradient(circle at 55% 86%, rgba(32,109,255,.22), transparent 24rem),
+      linear-gradient(135deg, #100818 0%, #071525 45%, #04111f 100%);
     overflow-x: hidden;
   }
   body::before {
     content: "";
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     pointer-events: none;
     background-image:
-      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(circle at center, black, transparent 75%);
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, black, transparent 78%);
   }
-  #app {
+  .portal {
     min-height: 100dvh;
     display: grid;
-    grid-template-columns: minmax(290px, 1fr) minmax(260px, 370px);
-    align-items: center;
-    gap: clamp(14px, 3vw, 34px);
-    padding: calc(16px + env(safe-area-inset-top)) clamp(12px, 3vw, 38px) calc(18px + env(safe-area-inset-bottom));
+    place-items: center;
+    padding: calc(24px + env(safe-area-inset-top)) clamp(14px, 4vw, 50px) calc(24px + env(safe-area-inset-bottom));
+    position: relative;
+    z-index: 1;
   }
-  .stage { display: grid; place-items: center; gap: 12px; }
-  .title { text-align: center; }
+  .shell {
+    width: min(1100px, 100%);
+    display: grid;
+    gap: clamp(18px, 4vw, 32px);
+  }
+  header { text-align: center; }
+  .eyebrow {
+    margin: 0 0 8px;
+    color: #b9f7ff;
+    font-weight: 900;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-size: clamp(12px, 2vw, 15px);
+  }
   h1 {
     margin: 0;
-    font-size: clamp(30px, 5vw, 62px);
-    letter-spacing: .04em;
+    font-size: clamp(44px, 9vw, 98px);
+    line-height: .9;
     text-transform: uppercase;
-    text-shadow: 0 0 18px rgba(53,244,255,.65), 0 8px 30px rgba(0,0,0,.55);
+    text-shadow: 0 0 22px rgba(53,244,255,.55), 0 12px 40px rgba(0,0,0,.58);
   }
-  .subtitle { margin: 8px 0 0; color: #b9f7ff; font-weight: 700; letter-spacing: .08em; }
-  .board-wrap {
-    width: min(88dvh, 92vw, 760px);
-    aspect-ratio: 1;
-    position: relative;
-    padding: clamp(10px, 1.8vw, 18px);
-    border-radius: clamp(18px, 3vw, 34px);
-    background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.03));
-    box-shadow: 0 26px 70px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.22), 0 0 45px rgba(32,217,189,.25);
+  .intro {
+    margin: 16px auto 0;
+    max-width: 720px;
+    color: rgba(246,254,255,.86);
+    font-size: clamp(16px, 2.5vw, 21px);
+    line-height: 1.5;
   }
-  #board {
-    width: 100%; height: 100%;
+  .games {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    border-radius: clamp(12px, 2vw, 24px);
-    overflow: hidden;
-    touch-action: manipulation;
-    box-shadow: inset 0 0 26px rgba(0,0,0,.55);
-  }
-  .sq {
-    position: relative;
-    border: 0;
-    display: grid;
-    place-items: center;
-    font-size: clamp(27px, 7vw, 72px);
-    cursor: pointer;
-    user-select: none;
-    transition: filter .15s ease, transform .15s ease;
-  }
-  .sq.light { background: linear-gradient(145deg, #dffcff, #89e8f1 48%, #62ccd9); }
-  .sq.dark  { background: linear-gradient(145deg, #14445f, #0a2e4a 52%, #092238); }
-  .sq::after {
-    content: "";
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.22), transparent 34%), linear-gradient(135deg, rgba(255,255,255,.08), transparent 55%);
-    pointer-events: none;
-  }
-  .sq.selected { outline: min(1.1vw, 8px) solid rgba(255,231,163,.9); outline-offset: min(-1.1vw, -8px); z-index: 2; }
-  .sq.move::before, .sq.capture::before {
-    content: "";
-    position: absolute;
-    width: 28%; height: 28%; border-radius: 50%;
-    background: rgba(255,231,163,.78);
-    box-shadow: 0 0 20px rgba(255,231,163,.75);
-    z-index: 2;
-  }
-  .sq.capture::before { width: 78%; height: 78%; border: 5px solid rgba(255,231,163,.82); background: transparent; }
-  .piece {
-    position: relative;
-    z-index: 3;
-    width: 82%; height: 82%;
-    display: grid; place-items: center;
-    border-radius: 50%;
-    line-height: 1;
-    filter: drop-shadow(0 9px 10px rgba(0,0,0,.45));
-    transform: translateY(-1%);
-  }
-  .piece.white {
-    color: #f7ffff;
-    text-shadow: 0 2px 0 #155c9d, 0 0 12px rgba(53,244,255,.9), 0 0 30px rgba(32,217,189,.75);
-    background:
-      radial-gradient(circle at 26% 20%, #fff 0 6%, transparent 7%),
-      radial-gradient(circle at 35% 25%, rgba(255,255,255,.95), transparent 21%),
-      linear-gradient(145deg, #35f4ff, #18c8d4 45%, #106bff 100%);
-    box-shadow: inset 0 0 14px rgba(255,255,255,.55), inset -10px -15px 25px rgba(0,38,120,.38), 0 0 22px rgba(53,244,255,.55);
-  }
-  .piece.black {
-    color: #c9fbff;
-    text-shadow: 0 2px 0 #031221, 0 0 10px rgba(32,217,189,.7);
-    background:
-      radial-gradient(circle at 26% 20%, rgba(255,255,255,.85) 0 5%, transparent 7%),
-      linear-gradient(145deg, #0a7897, #063553 44%, #041523 100%);
-    box-shadow: inset 0 0 12px rgba(69,255,240,.35), inset -10px -15px 25px rgba(0,0,0,.5), 0 0 20px rgba(32,217,189,.3);
-  }
-  .piece::after {
-    content: "✦";
-    position: absolute;
-    right: 10%; top: 7%;
-    font-size: .28em;
-    color: white;
-    animation: twinkle 1.4s infinite alternate ease-in-out;
-  }
-  @keyframes twinkle { from { opacity:.35; transform: scale(.75) rotate(0deg); } to { opacity:1; transform: scale(1.2) rotate(22deg); } }
-  .side {
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 3vw, 28px);
   }
   .card {
-    background: var(--panel);
-    border: 1px solid rgba(130,248,255,.25);
-    border-radius: 24px;
-    padding: 18px;
-    box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.16);
-    backdrop-filter: blur(10px);
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 22px;
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: clamp(24px, 4vw, 40px);
+    color: inherit;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.2);
+    box-shadow: 0 24px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.22);
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
   }
-  .status { font-size: clamp(19px, 2.6vw, 28px); font-weight: 900; color: #f3ffff; }
-  .small { color: #b9f7ff; line-height: 1.45; }
-  .controls { display: grid; gap: 10px; }
-  .mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  button, select {
-    width: 100%;
-    font: inherit;
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 16px;
-    padding: 13px 14px;
-    color: #eaffff;
-    background: linear-gradient(145deg, rgba(42,225,255,.22), rgba(14,77,130,.62));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 25px rgba(0,0,0,.18);
-    cursor: pointer;
+  .card:hover, .card:focus-visible {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255,255,255,.42);
+    box-shadow: 0 30px 85px rgba(0,0,0,.55), 0 0 42px rgba(53,244,255,.2), inset 0 1px 0 rgba(255,255,255,.3);
+    outline: none;
   }
-  button.active { background: linear-gradient(145deg, #35f4ff, #1572ff); color: #021425; font-weight: 900; }
-  button:active { transform: translateY(1px); }
-  .captures { min-height: 48px; font-size: 25px; letter-spacing: 3px; word-break: break-word; }
-  .move-log { max-height: 170px; overflow: auto; padding-right: 6px; font-size: 14px; color: #d9fbff; }
-  .move-log div { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
-  @media (max-width: 880px) {
-    #app { grid-template-columns: 1fr; align-items: start; }
-    .board-wrap { width: min(92vw, calc(100dvh - 310px), 650px); min-width: 288px; }
-    .side { width: min(92vw, 650px); justify-self: center; justify-content: start; }
-    .card { padding: 14px; border-radius: 20px; }
-    .move-log { max-height: 92px; }
+  .card::before, .card::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
   }
-  @media (max-width: 520px) {
-    #app { gap: 10px; padding-left: 8px; padding-right: 8px; }
-    .subtitle { font-size: 12px; }
-    .board-wrap { width: min(96vw, calc(100dvh - 285px)); padding: 8px; }
-    .mode-row { grid-template-columns: 1fr; }
+  .card::before {
+    inset: -30%;
+    background: radial-gradient(circle at 24% 18%, rgba(255,255,255,.35), transparent 15rem);
+    opacity: .75;
+  }
+  .card::after {
+    width: 190px;
+    height: 190px;
+    right: -45px;
+    bottom: -45px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.14);
+    box-shadow: inset 0 0 30px rgba(255,255,255,.15);
+  }
+  .boba { background: linear-gradient(145deg, rgba(255,154,212,.82), rgba(38,20,62,.9)); }
+  .chess { background: linear-gradient(145deg, rgba(53,244,255,.7), rgba(6,30,63,.94)); }
+  .top, .bottom { position: relative; z-index: 1; }
+  .icon {
+    font-size: clamp(70px, 12vw, 120px);
+    filter: drop-shadow(0 16px 20px rgba(0,0,0,.35));
+  }
+  h2 {
+    margin: 12px 0 10px;
+    font-size: clamp(30px, 5vw, 54px);
+    line-height: 1;
+  }
+  .desc {
+    margin: 0;
+    max-width: 470px;
+    color: rgba(255,255,255,.9);
+    font-size: clamp(15px, 2.1vw, 18px);
+    line-height: 1.45;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: 100%;
+    padding: 12px 17px;
+    border-radius: 999px;
+    font-weight: 950;
+    color: #06131f;
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 10px 25px rgba(0,0,0,.2);
+  }
+  .sparkle {
+    position: absolute;
+    color: white;
+    z-index: 1;
+    animation: twinkle 1.7s infinite alternate ease-in-out;
+    opacity: .85;
+  }
+  .sparkle.one { top: 18%; right: 18%; font-size: 28px; }
+  .sparkle.two { left: 12%; bottom: 20%; font-size: 18px; animation-delay: .5s; }
+  @keyframes twinkle { from { transform: scale(.72) rotate(-12deg); opacity: .35; } to { transform: scale(1.16) rotate(18deg); opacity: 1; } }
+  footer { text-align: center; color: rgba(246,254,255,.62); font-size: 13px; }
+  @media (max-width: 760px) {
+    .games { grid-template-columns: 1fr; }
+    .card { min-height: 300px; }
+    h1 { font-size: clamp(42px, 14vw, 72px); }
   }
 </style>
 </head>
 <body>
-<main id="app">
-  <section class="stage">
-    <div class="title">
-      <h1>Aqua Royal Chess</h1>
-      <p class="subtitle">realistic glitter-blue chess for phone, iPad, and computer</p>
-    </div>
-    <div class="board-wrap"><div id="board" aria-label="Chess board"></div></div>
-  </section>
-  <aside class="side">
-    <div class="card">
-      <div id="status" class="status">White to move</div>
-      <p id="hint" class="small">Choose single player to battle the AI, or multiplayer for pass-and-play chess on one screen.</p>
-    </div>
-    <div class="card controls">
-      <div class="mode-row">
-        <button id="singleBtn" class="active">Single Player vs AI</button>
-        <button id="multiBtn">Multiplayer</button>
-      </div>
-      <button id="newBtn">New Game</button>
-    </div>
-    <div class="card">
-      <strong>Captured pieces</strong>
-      <div id="captures" class="captures"></div>
-    </div>
-    <div class="card">
-      <strong>Moves</strong>
-      <div id="moves" class="move-log"></div>
-    </div>
-  </aside>
+<main class="portal">
+  <div class="shell">
+    <header>
+      <p class="eyebrow">Randel's Game Portal</p>
+      <h1>Pick a Game</h1>
+      <p class="intro">Two games are ready: the original sparkly Boba Bounce arcade game and the new realistic glitter-blue chess game with single-player AI and local multiplayer.</p>
+    </header>
+    <section class="games" aria-label="Available games">
+      <a class="card boba" href="boba.html">
+        <span class="sparkle one">✦</span><span class="sparkle two">✧</span>
+        <div class="top">
+          <div class="icon">🧋</div>
+          <h2>Boba Bounce</h2>
+          <p class="desc">Bounce the color-shifting boba tea on a sparkly bar. Keep it from falling, score points, and chase your best score.</p>
+        </div>
+        <div class="bottom"><span class="pill">Play Boba Bounce →</span></div>
+      </a>
+      <a class="card chess" href="chess.html">
+        <span class="sparkle one">✦</span><span class="sparkle two">✧</span>
+        <div class="top">
+          <div class="icon">♛</div>
+          <h2>Aqua Royal Chess</h2>
+          <p class="desc">Play chess against the AI or switch to multiplayer. The board and tokens glow in glittery blue and turquoise.</p>
+        </div>
+        <div class="bottom"><span class="pill">Play Chess →</span></div>
+      </a>
+    </section>
+    <footer>Works on phones, iPads, and computers.</footer>
+  </div>
 </main>
-<script>
-(() => {
-  const boardEl = document.getElementById('board');
-  const statusEl = document.getElementById('status');
-  const hintEl = document.getElementById('hint');
-  const capturesEl = document.getElementById('captures');
-  const movesEl = document.getElementById('moves');
-  const singleBtn = document.getElementById('singleBtn');
-  const multiBtn = document.getElementById('multiBtn');
-  const newBtn = document.getElementById('newBtn');
-  const symbols = {
-    wK:'♔', wQ:'♕', wR:'♖', wB:'♗', wN:'♘', wP:'♙',
-    bK:'♚', bQ:'♛', bR:'♜', bB:'♝', bN:'♞', bP:'♟'
-  };
-  const values = {P:100, N:320, B:330, R:500, Q:900, K:0};
-  let board, turn, selected, moves, mode = 'single', gameOver, captured, history, aiThinking;
-
-  function startBoard() {
-    const rows = [
-      ['bR','bN','bB','bQ','bK','bB','bN','bR'],
-      ['bP','bP','bP','bP','bP','bP','bP','bP'],
-      [null,null,null,null,null,null,null,null],
-      [null,null,null,null,null,null,null,null],
-      [null,null,null,null,null,null,null,null],
-      [null,null,null,null,null,null,null,null],
-      ['wP','wP','wP','wP','wP','wP','wP','wP'],
-      ['wR','wN','wB','wQ','wK','wB','wN','wR']
-    ];
-    return rows.map(r => r.slice());
-  }
-
-  function newGame() {
-    board = startBoard(); turn = 'w'; selected = null; moves = []; gameOver = false;
-    captured = []; history = []; aiThinking = false;
-    render(); updateStatus('White to move');
-    hintEl.textContent = mode === 'single' ? 'You are glitter-blue White. Pick a piece, then a highlighted square. The AI advances after your move.' : 'Multiplayer mode: take turns on the same device.';
-  }
-
-  function inBounds(r,c){ return r>=0 && r<8 && c>=0 && c<8; }
-  function colorOf(p){ return p ? p[0] : null; }
-  function typeOf(p){ return p ? p[1] : null; }
-  function enemy(a,b){ return a && b && colorOf(a) !== colorOf(b); }
-  function clone(b){ return b.map(r => r.slice()); }
-  function alg(r,c){ return 'abcdefgh'[c] + (8-r); }
-
-  function render() {
-    boardEl.innerHTML = '';
-    const legalTargets = selected ? legalMovesFor(selected.r, selected.c) : [];
-    for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
-      const sq = document.createElement('button');
-      sq.className = 'sq ' + ((r+c)%2 ? 'dark' : 'light');
-      sq.setAttribute('aria-label', alg(r,c));
-      if (selected && selected.r === r && selected.c === c) sq.classList.add('selected');
-      const target = legalTargets.find(m => m.to.r === r && m.to.c === c);
-      if (target) sq.classList.add(board[r][c] ? 'capture' : 'move');
-      const p = board[r][c];
-      if (p) {
-        const piece = document.createElement('span');
-        piece.className = 'piece ' + (colorOf(p)==='w' ? 'white' : 'black');
-        piece.textContent = symbols[p];
-        sq.appendChild(piece);
-      }
-      sq.addEventListener('click', () => squareClick(r,c));
-      boardEl.appendChild(sq);
-    }
-    capturesEl.textContent = captured.map(p => symbols[p]).join(' ');
-    movesEl.innerHTML = history.slice(-24).map((m,i) => `<div>${history.length - history.slice(-24).length + i + 1}. ${m}</div>`).join('');
-    movesEl.scrollTop = movesEl.scrollHeight;
-  }
-
-  function squareClick(r,c) {
-    if (gameOver || aiThinking) return;
-    if (mode === 'single' && turn === 'b') return;
-    const p = board[r][c];
-    if (selected) {
-      const legal = legalMovesFor(selected.r, selected.c);
-      const move = legal.find(m => m.to.r === r && m.to.c === c);
-      if (move) { makeMove(move); return; }
-      selected = null;
-    }
-    if (p && colorOf(p) === turn) selected = {r,c};
-    render();
-  }
-
-  function pseudoMoves(r,c,b=board) {
-    const p = b[r][c]; if (!p) return [];
-    const col = colorOf(p), typ = typeOf(p), dir = col === 'w' ? -1 : 1;
-    const out = [];
-    const add = (rr,cc) => { if (inBounds(rr,cc) && colorOf(b[rr][cc]) !== col) out.push({from:{r,c}, to:{r:rr,c:cc}}); };
-    if (typ === 'P') {
-      const one = r + dir;
-      if (inBounds(one,c) && !b[one][c]) {
-        out.push({from:{r,c}, to:{r:one,c}});
-        const start = col === 'w' ? 6 : 1, two = r + dir*2;
-        if (r === start && !b[two][c]) out.push({from:{r,c}, to:{r:two,c}});
-      }
-      for (const dc of [-1,1]) {
-        const rr = r + dir, cc = c + dc;
-        if (inBounds(rr,cc) && enemy(p,b[rr][cc])) out.push({from:{r,c}, to:{r:rr,c:cc}});
-      }
-    }
-    if (typ === 'N') for (const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) add(r+dr,c+dc);
-    if (typ === 'B' || typ === 'R' || typ === 'Q') {
-      const dirs = [];
-      if (typ === 'B' || typ === 'Q') dirs.push([-1,-1],[-1,1],[1,-1],[1,1]);
-      if (typ === 'R' || typ === 'Q') dirs.push([-1,0],[1,0],[0,-1],[0,1]);
-      for (const [dr,dc] of dirs) {
-        let rr = r+dr, cc = c+dc;
-        while (inBounds(rr,cc)) {
-          if (!b[rr][cc]) out.push({from:{r,c}, to:{r:rr,c:cc}});
-          else { if (enemy(p,b[rr][cc])) out.push({from:{r,c}, to:{r:rr,c:cc}}); break; }
-          rr += dr; cc += dc;
-        }
-      }
-    }
-    if (typ === 'K') for (let dr=-1; dr<=1; dr++) for (let dc=-1; dc<=1; dc++) if (dr || dc) add(r+dr,c+dc);
-    return out;
-  }
-
-  function applyMove(b,m) {
-    const nb = clone(b), p = nb[m.from.r][m.from.c];
-    nb[m.to.r][m.to.c] = p;
-    nb[m.from.r][m.from.c] = null;
-    if (typeOf(p) === 'P' && (m.to.r === 0 || m.to.r === 7)) nb[m.to.r][m.to.c] = colorOf(p) + 'Q';
-    return nb;
-  }
-
-  function kingPos(col,b=board) {
-    for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (b[r][c] === col+'K') return {r,c};
-    return null;
-  }
-
-  function attacked(r,c,by,b=board) {
-    for (let rr=0; rr<8; rr++) for (let cc=0; cc<8; cc++) {
-      const p = b[rr][cc]; if (!p || colorOf(p) !== by) continue;
-      if (typeOf(p) === 'P') {
-        const dir = by === 'w' ? -1 : 1;
-        if (rr + dir === r && Math.abs(cc-c) === 1) return true;
-      } else if (pseudoMoves(rr,cc,b).some(m => m.to.r === r && m.to.c === c)) return true;
-    }
-    return false;
-  }
-
-  function inCheck(col,b=board) {
-    const k = kingPos(col,b);
-    return k ? attacked(k.r,k.c,col==='w'?'b':'w',b) : true;
-  }
-
-  function legalMovesFor(r,c) {
-    const p = board[r][c]; if (!p || colorOf(p) !== turn) return [];
-    return pseudoMoves(r,c).filter(m => !inCheck(turn, applyMove(board,m)));
-  }
-
-  function allLegal(col=turn) {
-    const old = turn; turn = col;
-    const list = [];
-    for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (colorOf(board[r][c]) === col) list.push(...legalMovesFor(r,c));
-    turn = old;
-    return list;
-  }
-
-  function makeMove(m) {
-    const p = board[m.from.r][m.from.c], taken = board[m.to.r][m.to.c];
-    if (taken) captured.push(taken);
-    board = applyMove(board,m);
-    const promoted = typeOf(p) === 'P' && (m.to.r === 0 || m.to.r === 7) ? '=Q' : '';
-    history.push(`${symbols[p]} ${alg(m.from.r,m.from.c)} → ${alg(m.to.r,m.to.c)}${taken ? ' x ' + symbols[taken] : ''}${promoted}`);
-    turn = turn === 'w' ? 'b' : 'w';
-    selected = null;
-    finishTurn();
-  }
-
-  function finishTurn() {
-    render();
-    const legal = allLegal(turn);
-    const side = turn === 'w' ? 'White' : 'Black';
-    if (!legal.length) {
-      gameOver = true;
-      updateStatus(inCheck(turn) ? `Checkmate! ${turn === 'w' ? 'Black' : 'White'} wins.` : 'Stalemate. It is a draw.');
-      hintEl.textContent = 'Start a new game to play again.';
-      return;
-    }
-    updateStatus(`${side} to move${inCheck(turn) ? ' — check!' : ''}`);
-    if (mode === 'single' && turn === 'b') {
-      aiThinking = true;
-      hintEl.textContent = 'AI is calculating its next move...';
-      setTimeout(aiMove, 450);
-    } else {
-      hintEl.textContent = mode === 'single' ? 'Your move. Capture the dark pieces and protect your king.' : 'Pass-and-play: the next player moves now.';
-    }
-  }
-
-  function updateStatus(text){ statusEl.textContent = text; }
-
-  function aiMove() {
-    const legal = allLegal('b');
-    if (!legal.length) { aiThinking = false; finishTurn(); return; }
-    let bestScore = -Infinity, choices = [];
-    for (const m of legal) {
-      const target = board[m.to.r][m.to.c];
-      let score = Math.random() * 20;
-      if (target) score += values[typeOf(target)] * 3 - values[typeOf(board[m.from.r][m.from.c])] * .15;
-      const nb = applyMove(board,m);
-      if (inCheck('w', nb)) score += 85;
-      const center = Math.abs(3.5-m.to.r) + Math.abs(3.5-m.to.c);
-      score += (7-center) * 8;
-      if (typeOf(board[m.from.r][m.from.c]) === 'P' && m.to.r === 7) score += 800;
-      if (score > bestScore + .01) { bestScore = score; choices = [m]; }
-      else if (Math.abs(score-bestScore) < .01) choices.push(m);
-    }
-    aiThinking = false;
-    makeMove(choices[Math.floor(Math.random()*choices.length)]);
-  }
-
-  singleBtn.addEventListener('click', () => { mode = 'single'; singleBtn.classList.add('active'); multiBtn.classList.remove('active'); newGame(); });
-  multiBtn.addEventListener('click', () => { mode = 'multi'; multiBtn.classList.add('active'); singleBtn.classList.remove('active'); newGame(); });
-  newBtn.addEventListener('click', newGame);
-  newGame();
-})();
-</script>
 </body>
 </html>
